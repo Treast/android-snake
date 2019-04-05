@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
@@ -18,16 +17,15 @@ import static android.content.Context.SENSOR_SERVICE;
 
 public class SnakeView extends GridView {
 
-    private Snake snake = null;
+    private PlayerSnake snake = null;
+    private IASnake iaSnake = null;
     private Apple apple = null;
 
     private SensorManager sensorManager;
     private Sensor gyroscopeSensor;
-    private SensorEventListener gyroscopeSensorListener;
-    private float calibrationX = 0;
-    private float calibrationZ = 0;
-    private float gyroscopeX = 0;
-    private float gyroscopeZ = 0;
+
+    private Vector2<Double> motionCalibration = new Vector2<>(0.0, 0.0);
+    private Vector2<Double> motionSensorData = new Vector2<>(0.0, 0.0);
 
     public SnakeView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -45,38 +43,32 @@ public class SnakeView extends GridView {
 
         sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        this.registerGyroscopeListener();
+        registerGyroscopeListener();
 
-        this.resetTileList(1000);
+        resetTileList(1000);
 
-        this.loadTile(this.TILE_SNAKE, r.getDrawable(R.drawable.ic_snake));
-        this.loadTile(this.TILE_WALL, r.getDrawable(R.drawable.ic_wall));
-        this.loadTile(this.TILE_EMPTY, r.getDrawable(R.drawable.ic_floor));
-        this.loadTile(this.TILE_APPLE, r.getDrawable(R.drawable.ic_apple));
-        this.loadTile(this.TILE_SNAKE_TAIL, r.getDrawable(R.drawable.ic_snake2));
+        loadTile(TILE_SNAKE, r.getDrawable(R.drawable.ic_snake));
+        loadTile(TILE_WALL, r.getDrawable(R.drawable.ic_wall));
+        loadTile(TILE_EMPTY, r.getDrawable(R.drawable.ic_floor));
+        loadTile(TILE_APPLE, r.getDrawable(R.drawable.ic_apple));
+        loadTile(TILE_SNAKE_TAIL, r.getDrawable(R.drawable.ic_snake2));
     }
 
     public void resetCalibration() {
-        gyroscopeX = 0;
-        gyroscopeZ = 0;
+        motionSensorData.set(0.0, 0.0);
     }
 
     private void registerGyroscopeListener() {
         // Create a listener
-        gyroscopeSensorListener = new SensorEventListener() {
+        SensorEventListener gyroscopeSensorListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                if(sensorEvent.values.length == 5) {
-                    if(calibrationX == 0) {
-                        calibrationX = sensorEvent.values[0];
+                if (sensorEvent.values.length == 5) {
+                    if (motionCalibration.getX() == 0 && motionCalibration.getY() == 0) {
+                        motionCalibration.set((double) sensorEvent.values[0], (double) sensorEvent.values[1]);
                     }
 
-                    if(calibrationZ == 0) {
-                        calibrationZ = sensorEvent.values[1];
-                    }
-
-                    gyroscopeX = sensorEvent.values[0];
-                    gyroscopeZ = sensorEvent.values[1];
+                    motionSensorData.set((double) sensorEvent.values[0], (double) sensorEvent.values[1]);
                 }
             }
 
@@ -89,56 +81,61 @@ public class SnakeView extends GridView {
     }
 
     public void startGame() {
-        this.snake = new Snake();
-        this.apple = new Apple();
-        this.currentMode = MODE_PLAY;
+        snake = new PlayerSnake();
+        iaSnake = new IASnake();
+        apple = new Apple();
+        currentMode = MODE_PLAY;
     }
 
     public void stopGame() {
-        this.currentMode = MODE_STOP;
+        currentMode = MODE_STOP;
     }
 
     private RefreshHandler mRedrawHandler = new RefreshHandler();
+
     class RefreshHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             SnakeView.this.clearTiles();
             SnakeView.this.invalidate();
         }
-        public void sleep(long delayMillis) {
-            this.removeMessages(0);
-            sendMessageDelayed(obtainMessage(0), delayMillis);
+
+        void sleep() {
+            removeMessages(0);
+            sendMessageDelayed(obtainMessage(0), (long) 400);
         }
-    };
+    }
+
+    ;
 
     private void showSnake() {
-        if(this.snake != null) {
-            this.snake.move();
-            this.setTile(this.TILE_SNAKE, this.snake.getX(), this.snake.getY());
+        if (snake != null) {
+            snake.move();
+            Vector2<Integer> snakePosition = snake.getPosition();
+            setTile(TILE_SNAKE, snakePosition.getX(), snakePosition.getY());
 
-            ArrayList<Coordinates> coordinates = this.snake.getCoordinates();
-            for(int i = 0; i < coordinates.size() - 1; i += 1) {
-                Coordinates coords = coordinates.get(i);
-                this.setTile(this.TILE_SNAKE_TAIL, coords.x, coords.y);
+            ArrayList<Vector2<Integer>> coordinates = snake.getTrail();
+            for (int i = 0; i < coordinates.size() - 1; i += 1) {
+                Vector2<Integer> coords = coordinates.get(i);
+                setTile(TILE_SNAKE_TAIL, coords.getX(), coords.getY());
             }
         }
     }
 
     private void showApple() {
-        if(this.apple != null) {
-            this.setTile(this.TILE_APPLE, this.apple.getX(), this.apple.getY());
+        if (apple != null) {
+            Vector2<Integer> applePosition = apple.getPosition();
+            setTile(TILE_APPLE, applePosition.getX(), applePosition.getY());
         }
     }
 
     private void checkCollision() {
-        if(this.apple != null && this.snake != null) {
-            if(this.snake.getX() == this.apple.getX() && this.apple.getY() == this.snake.getY()) {
-                this.snake.addTail(this.snake.getX(), this.snake.getY());
-                this.apple.randomize();
-            }
+        if (apple != null && snake != null) {
+            snake.checkCollision(apple);
         }
     }
 
+    /*
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //This prevents touchscreen events from flooding the main thread
@@ -154,17 +151,17 @@ public class SnakeView extends GridView {
                     double xVirtual = GridView.getTileX(xInitRaw);
                     double yVirtual = GridView.getTileY(yInitRaw);
 
-                    double diffX = Math.abs(xVirtual - this.snake.getX());
-                    double diffY = Math.abs(yVirtual - this.snake.getY());
+                    double diffX = Math.abs(xVirtual - this.snake.getPosition().getX());
+                    double diffY = Math.abs(yVirtual - this.snake.getPosition().getY());
 
                     if(diffX > diffY) {
-                        if(xVirtual > this.snake.getX()) {
+                        if(xVirtual > this.snake.getPosition().getX()) {
                             this.snake.setVector(1, 0);
                         } else {
                             this.snake.setVector(-1, 0);
                         }
                     } else {
-                        if(yVirtual > this.snake.getY()) {
+                        if(yVirtual > this.snake.getPosition().getY()) {
                             this.snake.setVector(0, 1);
                         } else {
                             this.snake.setVector(0, -1);
@@ -179,42 +176,53 @@ public class SnakeView extends GridView {
         }
         return true;
     }
+    */
 
     @Override
     protected void updateTiles() {
         for (int x = 0; x < GridView.getNbTileX(); x++) {
-            setTile(this.TILE_WALL, x, 0);
-            setTile(this.TILE_WALL, x, mNbTileY - 1);
+            setTile(TILE_WALL, x, 0);
+            setTile(TILE_WALL, x, mNbTileY - 1);
         }
 
         for (int y = 0; y < GridView.getNbTileY(); y++) {
-            setTile(this.TILE_WALL, 0, y);
-            setTile(this.TILE_WALL, mNbTileX - 1, y);
+            setTile(TILE_WALL, 0, y);
+            setTile(TILE_WALL, mNbTileX - 1, y);
         }
 
-        this.setSnakeMovement();
+        setSnakeMovement();
 
-        this.showApple();
-        this.showSnake();
-        this.checkCollision();
+        showApple();
+        showSnake();
+        showIASnake();
+        checkCollision();
+    }
+
+    private void showIASnake() {
+        iaSnake.lookAtApple(apple.getPosition());
+        iaSnake.move();
+        Vector2<Integer> iaSnakePosition = iaSnake.getPosition();
+        setTile(TILE_SNAKE, iaSnakePosition.getX(), iaSnakePosition.getY());
+
+        iaSnake.checkCollision(apple);
     }
 
     public void setSnakeMovement() {
-        float xAxis = gyroscopeX - calibrationX;
-        float zAxis = gyroscopeZ - calibrationZ;
-        Log.d("Gyroscope", xAxis + " ; " + zAxis);
-        if(this.snake != null) {
-            if(Math.abs(xAxis) >  Math.abs(zAxis)) {
-                if(xAxis > 0) {
-                    this.snake.setVector(0, 1);
+        Vector2<Double> motionData = motionSensorData.clone();
+        motionData.substract(motionCalibration.getX(), motionCalibration.getY());
+
+        if (snake != null) {
+            if (Math.abs(motionData.getX()) > Math.abs(motionData.getY())) {
+                if (motionData.getX() > 0) {
+                    snake.setVector(0, 1);
                 } else {
-                    this.snake.setVector(0, -1);
+                    snake.setVector(0, -1);
                 }
             } else {
-                if(zAxis > 0) {
-                    this.snake.setVector(1, 0);
+                if (motionData.getY() > 0) {
+                    snake.setVector(1, 0);
                 } else {
-                    this.snake.setVector(-1, 0);
+                    snake.setVector(-1, 0);
                 }
             }
         }
@@ -222,16 +230,16 @@ public class SnakeView extends GridView {
 
     @Override
     public void clearTiles() {
-        if(this.currentMode == MODE_PLAY) {
+        if (currentMode == MODE_PLAY) {
             for (int x = 0; x < mNbTileX; x++) {
                 for (int y = 0; y < mNbTileY; y++) {
                     setTile(TILE_EMPTY, x, y);
                 }
             }
 
-            this.updateTiles();
+            updateTiles();
         }
 
-        mRedrawHandler.sleep(400);
+        mRedrawHandler.sleep();
     }
 }

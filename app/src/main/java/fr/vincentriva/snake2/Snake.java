@@ -2,63 +2,43 @@ package fr.vincentriva.snake2;
 
 import java.util.ArrayList;
 
-public class Snake {
-    private int xTiles;
-    private int yTiles;
+public abstract class Snake {
 
-    private int x;
-    private int y;
+    Vector2<Integer> board;
+    Vector2<Integer> position;
+    Vector2<Integer> speed;
+    ArrayList<Vector2<Integer>> stack = new ArrayList<>();
 
-    private int vX;
-    private int vY;
+    Snake() {
+        board = new Vector2<>(GridView.getNbTileX(), GridView.getNbTileY());
+        position = new Vector2<>(board.getX() / 2, board.getY() / 2);
+        speed = new Vector2<>(0, 1);
 
-    private ArrayList<Coordinates> stack = new ArrayList<>();
-
-    public Snake() {
-        this.xTiles = GridView.getNbTileX();
-        this.yTiles = GridView.getNbTileY();
-
-        this.x = xTiles / 2;
-        this.y = yTiles / 2;
-
-        this.stack.add(new Coordinates(this.x, this.y));
-
-        vX = 0;
-        vY = 1;
+        stack.add(position.clone());
     }
 
-    public void setVector(int x, int y) {
-        this.vX = x;
-        this.vY = y;
+    void setVector(int x, int y) {
+        speed.set(x, y);
     }
 
-    public ArrayList<Coordinates> getCoordinates() {
-        return this.stack;
+    ArrayList<Vector2<Integer>> getTrail() {
+        return stack;
     }
 
-    public void addTail(int x, int y) {
-        this.stack.add(new Coordinates(x, y));
+    private void addTail(int x, int y) {
+        stack.add(new Vector2<>(x, y));
     }
 
-    public void move() {
-        int newX = this.x + this.vX;
-        int newY = this.y + this.vY;
+    public abstract void move();
 
-        if(this.x < 0 || this.x >= this.xTiles - 1 || y < 0 || y >= yTiles - 1) {
-
-        } else {
-            this.x = newX;
-            this.y = newY;
+    void checkCollision(Apple apple) {
+        if(position.equals(apple.getPosition())) {
+            addTail(position.getX(), position.getY());
+            apple.randomize();
         }
-        this.stack.remove(0);
-        this.stack.add(new Coordinates(this.x, this.y));
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    Vector2<Integer> getPosition() {
+        return position;
     }
 }

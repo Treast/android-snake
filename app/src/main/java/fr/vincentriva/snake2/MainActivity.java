@@ -13,7 +13,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final String LOG_CAT = MainActivity.class.getName();
     private SnakeView snakeView;
-    private Menu mMenu;
     private boolean isRunning = false;
 
     @Override
@@ -22,14 +21,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.snakeView = findViewById(R.id.snake_view);
+        snakeView = findViewById(R.id.snake_view);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_main_menu, menu);
-        this.mMenu = menu;
         return true;
     }
 
@@ -38,14 +36,14 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_play:
                 Log.d(LOG_CAT, "Pressed");
-                this.isRunning = !this.isRunning;
-                item.setIcon(this.isRunning ? R.drawable.ic_pikachu : R.drawable.ic_unicorn);
+                isRunning = !isRunning;
+                item.setIcon(isRunning ? R.drawable.ic_pikachu : R.drawable.ic_unicorn);
 
-                if(this.isRunning) {
-                    this.snakeView.resetCalibration();
-                    this.snakeView.startGame();
+                if(isRunning) {
+                    snakeView.resetCalibration();
+                    snakeView.startGame();
                 } else {
-                    this.snakeView.stopGame();
+                    snakeView.stopGame();
                 }
 
                 return true;

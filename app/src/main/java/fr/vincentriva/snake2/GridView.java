@@ -40,7 +40,7 @@ public abstract class GridView extends View {
     public GridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        this.mPaint = new Paint();
+        mPaint = new Paint();
 
         TypedArray styledAttributes = context.obtainStyledAttributes(attrs,
                 R.styleable.GridView);
@@ -58,7 +58,7 @@ public abstract class GridView extends View {
     public GridView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        this.mPaint = new Paint();
+        mPaint = new Paint();
 
         TypedArray styledAttributes = context.obtainStyledAttributes(attrs,
                 R.styleable.GridView);
@@ -128,7 +128,7 @@ public abstract class GridView extends View {
         mGrid = new int[mNbTileX][mNbTileY];
 
         clearTiles();
-        this.invalidate();
+        invalidate();
     }
 
     public void clearTiles() {
@@ -138,7 +138,7 @@ public abstract class GridView extends View {
             }
         }
 
-        this.updateTiles();
+        updateTiles();
     }
 
     protected abstract void updateTiles();
