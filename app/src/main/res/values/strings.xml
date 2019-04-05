@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Snake2</string>
+    <string name="debug_creation_msg">Creation...</string>
+    <string name="play">Play</string>
+</resources>
