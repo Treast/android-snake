@@ -1,9 +1,12 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.models;
 
-public class IASnake extends Snake {
+import fr.vincentriva.snake2.utils.Vector2;
+import fr.vincentriva.snake2.interfaces.ISnake;
+
+public class IASnake extends ISnake {
     private Vector2<Integer> applePosition;
 
-    void lookAtApple(Vector2<Integer> applePosition) {
+    public void lookAtApple(Vector2<Integer> applePosition) {
         this.applePosition = applePosition.clone();
     }
 

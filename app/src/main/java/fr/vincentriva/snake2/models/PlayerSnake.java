@@ -1,6 +1,8 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.models;
 
-public class PlayerSnake extends Snake {
+import fr.vincentriva.snake2.interfaces.ISnake;
+
+public class PlayerSnake extends ISnake {
 
     @Override
     public void move() {

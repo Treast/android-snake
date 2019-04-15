@@ -1,15 +1,19 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.interfaces;
 
 import java.util.ArrayList;
 
-public abstract class Snake {
+import fr.vincentriva.snake2.models.Apple;
+import fr.vincentriva.snake2.views.GridView;
+import fr.vincentriva.snake2.utils.Vector2;
 
-    Vector2<Integer> board;
-    Vector2<Integer> position;
-    Vector2<Integer> speed;
-    ArrayList<Vector2<Integer>> stack = new ArrayList<>();
+public abstract class ISnake {
 
-    Snake() {
+    protected Vector2<Integer> board;
+    protected Vector2<Integer> position;
+    protected Vector2<Integer> speed;
+    protected ArrayList<Vector2<Integer>> stack = new ArrayList<>();
+
+    protected ISnake() {
         board = new Vector2<>(GridView.getNbTileX(), GridView.getNbTileY());
         position = new Vector2<>(board.getX() / 2, board.getY() / 2);
         speed = new Vector2<>(0, 1);
@@ -17,11 +21,11 @@ public abstract class Snake {
         stack.add(position.clone());
     }
 
-    void setVector(int x, int y) {
+    public void setVector(int x, int y) {
         speed.set(x, y);
     }
 
-    ArrayList<Vector2<Integer>> getTrail() {
+    public ArrayList<Vector2<Integer>> getTrail() {
         return stack;
     }
 
@@ -31,14 +35,14 @@ public abstract class Snake {
 
     public abstract void move();
 
-    void checkCollision(Apple apple) {
+    public void checkCollision(Apple apple) {
         if(position.equals(apple.getPosition())) {
             addTail(position.getX(), position.getY());
             apple.randomize();
         }
     }
 
-    Vector2<Integer> getPosition() {
+    public Vector2<Integer> getPosition() {
         return position;
     }
 }

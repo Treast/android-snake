@@ -1,26 +1,26 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.utils;
 
 public class Vector2<T extends Number> {
 
     private T x;
     private T y;
 
-    Vector2(T x, T y) {
+    public Vector2(T x, T y) {
         this.set(x, y);
     }
 
-    void set(T x, T y) {
+    public void set(T x, T y) {
         this.x = x;
         this.y = y;
     }
 
-    void add(int dX, int dY) {
+    public void add(int dX, int dY) {
         Number newX = this.x.intValue() + dX;
         Number newY = this.y.intValue() + dY;
         this.set((T) newX, (T) newY);
     }
 
-    void substract(double dX, double dY) {
+    public void substract(double dX, double dY) {
         Number newX = this.x.doubleValue() + dX;
         Number newY = this.y.doubleValue() + dY;
         this.set((T) newX, (T) newY);
@@ -30,7 +30,7 @@ public class Vector2<T extends Number> {
         return new Vector2<>(this.getX(), this.getY());
     }
 
-    T getX() {
+    public T getX() {
         return (T) x;
     }
 
@@ -38,7 +38,7 @@ public class Vector2<T extends Number> {
         this.x = x;
     }
 
-    T getY() {
+    public T getY() {
         return (T) y;
     }
 

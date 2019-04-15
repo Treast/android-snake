@@ -1,19 +1,18 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.views;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.util.ArrayList;
 
-import static android.content.Context.SENSOR_SERVICE;
+import fr.vincentriva.snake2.R;
+import fr.vincentriva.snake2.models.Apple;
+import fr.vincentriva.snake2.models.IASnake;
+import fr.vincentriva.snake2.models.PlayerSnake;
+import fr.vincentriva.snake2.utils.Vector2;
 
 public class SnakeView extends GridView {
 
@@ -21,11 +20,17 @@ public class SnakeView extends GridView {
     private IASnake iaSnake = null;
     private Apple apple = null;
 
+    private float linearAccelerationX = 0.0f;
+    private float linearAccelerationY = 0.0f;
+    private float linearAccelerationZ = 0.0f;
+
+    /*
     private SensorManager sensorManager;
     private Sensor gyroscopeSensor;
 
     private Vector2<Double> motionCalibration = new Vector2<>(0.0, 0.0);
     private Vector2<Double> motionSensorData = new Vector2<>(0.0, 0.0);
+     */
 
     public SnakeView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,9 +46,11 @@ public class SnakeView extends GridView {
         setFocusable(true);
         Resources r = context.getResources();
 
+        /*
         sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         registerGyroscopeListener();
+         */
 
         resetTileList(1000);
 
@@ -54,9 +61,13 @@ public class SnakeView extends GridView {
         loadTile(TILE_SNAKE_TAIL, r.getDrawable(R.drawable.ic_snake2));
     }
 
+    /*
     public void resetCalibration() {
         motionSensorData.set(0.0, 0.0);
     }
+     */
+
+    /*
 
     private void registerGyroscopeListener() {
         // Create a listener
@@ -78,6 +89,13 @@ public class SnakeView extends GridView {
         };
 
         sensorManager.registerListener(gyroscopeSensorListener, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+     */
+
+    public void setLinearAccelerationValues(float linearAccelerationX, float linearAccelerationY, float linearAccelerationZ) {
+        this.linearAccelerationX = linearAccelerationX;
+        this.linearAccelerationY = linearAccelerationY;
+        this.linearAccelerationZ = linearAccelerationZ;
     }
 
     public void startGame() {
@@ -135,49 +153,6 @@ public class SnakeView extends GridView {
         }
     }
 
-    /*
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        //This prevents touchscreen events from flooding the main thread
-        synchronized (event) {
-            try {
-                //Waits 16ms.
-                event.wait(16);
-
-                if(false && event.getAction() == MotionEvent.ACTION_UP) {
-                    int xInitRaw = (int) Math.floor(event.getRawX());
-                    int yInitRaw = (int) Math.floor(event.getRawY());
-
-                    double xVirtual = GridView.getTileX(xInitRaw);
-                    double yVirtual = GridView.getTileY(yInitRaw);
-
-                    double diffX = Math.abs(xVirtual - this.snake.getPosition().getX());
-                    double diffY = Math.abs(yVirtual - this.snake.getPosition().getY());
-
-                    if(diffX > diffY) {
-                        if(xVirtual > this.snake.getPosition().getX()) {
-                            this.snake.setVector(1, 0);
-                        } else {
-                            this.snake.setVector(-1, 0);
-                        }
-                    } else {
-                        if(yVirtual > this.snake.getPosition().getY()) {
-                            this.snake.setVector(0, 1);
-                        } else {
-                            this.snake.setVector(0, -1);
-                        }
-                    }
-                }
-            }
-            catch (InterruptedException e)
-            {
-                return true;
-            }
-        }
-        return true;
-    }
-    */
-
     @Override
     protected void updateTiles() {
         for (int x = 0; x < GridView.getNbTileX(); x++) {
@@ -190,7 +165,7 @@ public class SnakeView extends GridView {
             setTile(TILE_WALL, mNbTileX - 1, y);
         }
 
-        setSnakeMovement();
+        //setSnakeMovement();
 
         showApple();
         showSnake();
@@ -207,6 +182,7 @@ public class SnakeView extends GridView {
         iaSnake.checkCollision(apple);
     }
 
+    /*
     public void setSnakeMovement() {
         Vector2<Double> motionData = motionSensorData.clone();
         motionData.substract(motionCalibration.getX(), motionCalibration.getY());
@@ -227,6 +203,7 @@ public class SnakeView extends GridView {
             }
         }
     }
+     */
 
     @Override
     public void clearTiles() {

@@ -1,4 +1,4 @@
-package fr.vincentriva.snake2;
+package fr.vincentriva.snake2.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
