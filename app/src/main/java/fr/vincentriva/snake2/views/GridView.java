@@ -19,11 +19,14 @@ public abstract class GridView extends View {
     protected final int TILE_APPLE = 2;
     protected final int TILE_WALL = 3;
     protected final int TILE_SNAKE_TAIL = 4;
+    protected final int TILE_AI_SNAKE = 5;
 
 
 
     protected final int MODE_PLAY = 0;
     protected final int MODE_STOP = 1;
+    protected final int MODE_END = 2;
+
     protected int currentMode = MODE_STOP;
 
     private final Paint mPaint;
@@ -76,7 +79,6 @@ public abstract class GridView extends View {
 
     protected void resetTileList(int nbTiles) {
         mTileList = new Bitmap[nbTiles];
-        Log.d("GridView", mTileList.toString());
     }
 
     public void loadTile(int key, Drawable tile) {
@@ -97,7 +99,7 @@ public abstract class GridView extends View {
     public void onDraw(Canvas canvas) {
         Log.d(LOG_TAG, "Drawing...");
 
-        if(currentMode == MODE_PLAY) {
+        if(currentMode != MODE_STOP) {
             super.onDraw(canvas);
 
             for (int x = 0; x < mNbTileX; x++) {

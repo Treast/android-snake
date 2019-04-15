@@ -15,8 +15,8 @@ public class Apple {
     }
 
     public void randomize() {
-        int x = (int)Math.floor(Math.random() * this.board.getX().doubleValue());
-        int y = (int)Math.floor(Math.random() * this.board.getY().doubleValue());
+        int x = (int)Math.floor(Math.random() * (this.board.getX().doubleValue() - 2.0)) + 1;
+        int y = (int)Math.floor(Math.random() * (this.board.getY().doubleValue() - 2.0)) + 1;
         this.position.set(x, y);
     }
 

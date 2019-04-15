@@ -5,13 +5,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
 public class LinearAccelerationSensorListener implements SensorEventListener {
-    static float x = 0.0f;
-    static float y = 0.0f;
-    static float z = 0.0f;
-
     private SensorService sensorService;
 
-    public LinearAccelerationSensorListener(SensorService sensorService) {
+    LinearAccelerationSensorListener(SensorService sensorService) {
         this.sensorService = sensorService;
     }
 

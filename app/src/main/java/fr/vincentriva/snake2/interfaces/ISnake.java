@@ -33,13 +33,17 @@ public abstract class ISnake {
         stack.add(new Vector2<>(x, y));
     }
 
-    public abstract void move();
+    public abstract boolean move();
 
     public void checkCollision(Apple apple) {
         if(position.equals(apple.getPosition())) {
             addTail(position.getX(), position.getY());
             apple.randomize();
         }
+    }
+
+    public Boolean isOutOfScreen() {
+        return position.getX() <= 0 || position.getX() >= board.getX() - 1 || position.getY() <= 0 || position.getY() >= board.getY() - 1;
     }
 
     public Vector2<Integer> getPosition() {

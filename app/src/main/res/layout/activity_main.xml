@@ -13,4 +13,17 @@
         android:layout_height="match_parent"
         app:tileSize="20dp" />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/resultGameTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center|center_horizontal|center_vertical"
+            android:text="TextView"
+            android:textSize="24sp" />
+    </RelativeLayout>
+
 </merge>

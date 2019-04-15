@@ -5,6 +5,10 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -24,13 +28,9 @@ public class SnakeView extends GridView {
     private float linearAccelerationY = 0.0f;
     private float linearAccelerationZ = 0.0f;
 
-    /*
-    private SensorManager sensorManager;
-    private Sensor gyroscopeSensor;
+    private TextView resultGameTextView;
 
-    private Vector2<Double> motionCalibration = new Vector2<>(0.0, 0.0);
-    private Vector2<Double> motionSensorData = new Vector2<>(0.0, 0.0);
-     */
+    private final float ACCELERATION_THRESHOLD = 5.0f;
 
     public SnakeView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -46,12 +46,6 @@ public class SnakeView extends GridView {
         setFocusable(true);
         Resources r = context.getResources();
 
-        /*
-        sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
-        gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        registerGyroscopeListener();
-         */
-
         resetTileList(1000);
 
         loadTile(TILE_SNAKE, r.getDrawable(R.drawable.ic_snake));
@@ -59,38 +53,17 @@ public class SnakeView extends GridView {
         loadTile(TILE_EMPTY, r.getDrawable(R.drawable.ic_floor));
         loadTile(TILE_APPLE, r.getDrawable(R.drawable.ic_apple));
         loadTile(TILE_SNAKE_TAIL, r.getDrawable(R.drawable.ic_snake2));
+        loadTile(TILE_AI_SNAKE, r.getDrawable(R.drawable.ic_robot));
     }
 
-    /*
-    public void resetCalibration() {
-        motionSensorData.set(0.0, 0.0);
+    public void setResultGameTextView(TextView resultGameTextView) {
+        this.resultGameTextView = resultGameTextView;
     }
-     */
 
-    /*
-
-    private void registerGyroscopeListener() {
-        // Create a listener
-        SensorEventListener gyroscopeSensorListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent sensorEvent) {
-                if (sensorEvent.values.length == 5) {
-                    if (motionCalibration.getX() == 0 && motionCalibration.getY() == 0) {
-                        motionCalibration.set((double) sensorEvent.values[0], (double) sensorEvent.values[1]);
-                    }
-
-                    motionSensorData.set((double) sensorEvent.values[0], (double) sensorEvent.values[1]);
-                }
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-            }
-        };
-
-        sensorManager.registerListener(gyroscopeSensorListener, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    private void setResultText(String text) {
+        resultGameTextView.setText(text);
+        resultGameTextView.setVisibility(VISIBLE);
     }
-     */
 
     public void setLinearAccelerationValues(float linearAccelerationX, float linearAccelerationY, float linearAccelerationZ) {
         this.linearAccelerationX = linearAccelerationX;
@@ -103,9 +76,11 @@ public class SnakeView extends GridView {
         iaSnake = new IASnake();
         apple = new Apple();
         currentMode = MODE_PLAY;
+        if(resultGameTextView != null) resultGameTextView.setVisibility(INVISIBLE);
     }
 
     public void stopGame() {
+        if(resultGameTextView != null) resultGameTextView.setVisibility(INVISIBLE);
         currentMode = MODE_STOP;
     }
 
@@ -124,20 +99,42 @@ public class SnakeView extends GridView {
         }
     }
 
-    ;
-
     private void showSnake() {
-        if (snake != null) {
-            snake.move();
-            Vector2<Integer> snakePosition = snake.getPosition();
-            setTile(TILE_SNAKE, snakePosition.getX(), snakePosition.getY());
+        if(currentMode == MODE_PLAY) {
+            boolean hasMoved = snake.move();
 
-            ArrayList<Vector2<Integer>> coordinates = snake.getTrail();
-            for (int i = 0; i < coordinates.size() - 1; i += 1) {
-                Vector2<Integer> coords = coordinates.get(i);
-                setTile(TILE_SNAKE_TAIL, coords.getX(), coords.getY());
+            if(!hasMoved || snake.isOutOfScreen()) {
+                setResultText("YOU LOSE MOTHAFUCKA !");
+                currentMode = MODE_END;
             }
         }
+
+        Vector2<Integer> snakePosition = snake.getPosition();
+        setTile(TILE_SNAKE, snakePosition.getX(), snakePosition.getY());
+
+        ArrayList<Vector2<Integer>> coordinates = snake.getTrail();
+        for (int i = 0; i < coordinates.size() - 1; i += 1) {
+            Vector2<Integer> coords = coordinates.get(i);
+            setTile(TILE_SNAKE_TAIL, coords.getX(), coords.getY());
+        }
+    }
+
+    private void showIASnake() {
+        iaSnake.lookAtApple(apple.getPosition());
+
+        if(currentMode == MODE_PLAY) {
+            boolean hasMoved = iaSnake.move();
+
+            if(!hasMoved || iaSnake.isOutOfScreen()) {
+                setResultText("YOU WIN MOTHAFUCKA !");
+                currentMode = MODE_END;
+            }
+        }
+
+        Vector2<Integer> iaSnakePosition = iaSnake.getPosition();
+        setTile(TILE_AI_SNAKE, iaSnakePosition.getX(), iaSnakePosition.getY());
+
+        iaSnake.checkCollision(apple);
     }
 
     private void showApple() {
@@ -165,7 +162,7 @@ public class SnakeView extends GridView {
             setTile(TILE_WALL, mNbTileX - 1, y);
         }
 
-        //setSnakeMovement();
+        setSnakeMovement();
 
         showApple();
         showSnake();
@@ -173,46 +170,26 @@ public class SnakeView extends GridView {
         checkCollision();
     }
 
-    private void showIASnake() {
-        iaSnake.lookAtApple(apple.getPosition());
-        iaSnake.move();
-        Vector2<Integer> iaSnakePosition = iaSnake.getPosition();
-        setTile(TILE_SNAKE, iaSnakePosition.getX(), iaSnakePosition.getY());
-
-        iaSnake.checkCollision(apple);
-    }
-
-    /*
     public void setSnakeMovement() {
-        Vector2<Double> motionData = motionSensorData.clone();
-        motionData.substract(motionCalibration.getX(), motionCalibration.getY());
-
         if (snake != null) {
-            if (Math.abs(motionData.getX()) > Math.abs(motionData.getY())) {
-                if (motionData.getX() > 0) {
-                    snake.setVector(0, 1);
-                } else {
-                    snake.setVector(0, -1);
-                }
-            } else {
-                if (motionData.getY() > 0) {
-                    snake.setVector(1, 0);
-                } else {
-                    snake.setVector(-1, 0);
-                }
+            if (Math.abs(linearAccelerationY) > Math.abs(linearAccelerationX) && Math.abs(linearAccelerationY) > ACCELERATION_THRESHOLD) {
+                snake.setVector(0, -1 * (int)Math.signum(linearAccelerationX));
+            } else if(Math.abs(linearAccelerationX) > ACCELERATION_THRESHOLD) {
+                snake.setVector((int)Math.signum(linearAccelerationX), 0);
             }
         }
     }
-     */
+
 
     @Override
     public void clearTiles() {
-        if (currentMode == MODE_PLAY) {
+        if (currentMode != MODE_STOP) {
             for (int x = 0; x < mNbTileX; x++) {
                 for (int y = 0; y < mNbTileY; y++) {
                     setTile(TILE_EMPTY, x, y);
                 }
             }
+            // Log.d("SnakeState", "Clear");
 
             updateTiles();
         }
