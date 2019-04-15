@@ -46,6 +46,14 @@ public abstract class ISnake {
         return position.getX() <= 0 || position.getX() >= board.getX() - 1 || position.getY() <= 0 || position.getY() >= board.getY() - 1;
     }
 
+    public Boolean checkCollisionWithItself() {
+        Boolean isCollided = false;
+        for(Vector2 tail : stack) {
+            if(tail.getX().equals(position.getX()) && tail.getY().equals(position.getY())) isCollided = true;
+        }
+        return isCollided;
+    }
+
     public Vector2<Integer> getPosition() {
         return position;
     }

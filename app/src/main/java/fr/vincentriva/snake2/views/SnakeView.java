@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -19,6 +20,10 @@ import fr.vincentriva.snake2.models.PlayerSnake;
 import fr.vincentriva.snake2.utils.Vector2;
 
 public class SnakeView extends GridView {
+
+    private final static String MODE_TOUCH = "MODE_TOUCH";
+    private final static String MODE_ACCELERATION = "MODE_ACCELERATION";
+    private String currentMovementMode = MODE_TOUCH;
 
     private PlayerSnake snake = null;
     private IASnake iaSnake = null;
@@ -86,6 +91,12 @@ public class SnakeView extends GridView {
 
     private RefreshHandler mRedrawHandler = new RefreshHandler();
 
+    public void switchMovementMode(MenuItem menuMovementModeTextView) {
+        currentMovementMode = (currentMovementMode.equals(MODE_TOUCH)) ? MODE_ACCELERATION : MODE_TOUCH;
+
+        menuMovementModeTextView.setTitle((currentMovementMode.equals(MODE_TOUCH)) ? "Touch mode" : "Acceleration mode");
+    }
+
     class RefreshHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -101,9 +112,7 @@ public class SnakeView extends GridView {
 
     private void showSnake() {
         if(currentMode == MODE_PLAY) {
-            boolean hasMoved = snake.move();
-
-            if(!hasMoved || snake.isOutOfScreen()) {
+            if(!snake.move() || snake.isOutOfScreen() || snake.checkCollisionWithItself()) {
                 setResultText("YOU LOSE MOTHAFUCKA !");
                 currentMode = MODE_END;
             }
@@ -123,9 +132,7 @@ public class SnakeView extends GridView {
         iaSnake.lookAtApple(apple.getPosition());
 
         if(currentMode == MODE_PLAY) {
-            boolean hasMoved = iaSnake.move();
-
-            if(!hasMoved || iaSnake.isOutOfScreen()) {
+            if(!iaSnake.move() || iaSnake.isOutOfScreen()) {
                 setResultText("YOU WIN MOTHAFUCKA !");
                 currentMode = MODE_END;
             }

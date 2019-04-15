@@ -6,7 +6,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -84,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
                     snakeView.stopGame();
                 }
 
+                return true;
+            case R.id.menu_mode:
+                snakeView.switchMovementMode(item);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
