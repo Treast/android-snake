@@ -91,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
         stopService(sensorIntent);
     }
 
+    /**
+     * Définit le layout du menu
+     * @param menu Menu
+     * @return true
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -98,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Ecoute les clics sur les éléments du menu et
+     * lance les actions associées (lancement / arrêt de la partie et changement de mode de direction)
+     * @param item MenuItem cliquée
+     * @return True
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
