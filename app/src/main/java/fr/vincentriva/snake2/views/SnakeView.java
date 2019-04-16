@@ -239,7 +239,7 @@ public class SnakeView extends GridView {
                 //Waits 16ms.
                 event.wait(16);
 
-                if(currentMovementMode.equals(MODE_TOUCH) && event.getAction() == MotionEvent.ACTION_UP) {
+                if(currentMode == MODE_PLAY && currentMovementMode.equals(MODE_TOUCH) && event.getAction() == MotionEvent.ACTION_UP) {
                     int xInitRaw = (int) Math.floor(event.getRawX());
                     int yInitRaw = (int) Math.floor(event.getRawY());
 
