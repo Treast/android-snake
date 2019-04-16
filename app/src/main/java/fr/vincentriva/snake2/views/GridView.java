@@ -21,8 +21,6 @@ public abstract class GridView extends View {
     protected final int TILE_SNAKE_TAIL = 4;
     protected final int TILE_AI_SNAKE = 5;
 
-
-
     protected final int MODE_PLAY = 0;
     protected final int MODE_STOP = 1;
     protected final int MODE_END = 2;

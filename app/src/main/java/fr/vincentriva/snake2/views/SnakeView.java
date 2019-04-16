@@ -5,12 +5,9 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -20,22 +17,43 @@ import fr.vincentriva.snake2.models.IASnake;
 import fr.vincentriva.snake2.models.PlayerSnake;
 import fr.vincentriva.snake2.utils.Vector2;
 
+/**
+ * Représentation de la grille du jeu
+ */
 public class SnakeView extends GridView {
 
+    /**
+     * Différents modes d'input de l'utilisateur
+     * MODE_TOUCH: Le déplacement dépend de l'endroit où l'utilisateur appuye sur l'écran
+     * MODE_ACCELERATION: Le déplacement dépend des valeurs fournies par l'accéléromètre de l'utilisateur
+     */
     private final static String MODE_TOUCH = "MODE_TOUCH";
     private final static String MODE_ACCELERATION = "MODE_ACCELERATION";
     private String currentMovementMode = MODE_TOUCH;
 
+    /**
+     * Différents modèles du jeu
+     */
     private PlayerSnake snake = null;
     private IASnake iaSnake = null;
     private Apple apple = null;
 
+    /**
+     * Valeurs de l'accéléromètre (MODE_ACCELERATION uniquement)
+     */
     private float linearAccelerationX = 0.0f;
     private float linearAccelerationY = 0.0f;
     private float linearAccelerationZ = 0.0f;
 
+    /**
+     * TextView affiché lors de la fin d'une partie (WIN ou LOSE)
+     */
     private TextView resultGameTextView;
 
+    /**
+     * Seuil au-dela duquel on accepte de changer la direction du serpent du joueur (MODE_ACCELERATION uniquement)
+     * Si la valeur est inférieur, la direction n'est pas changée
+     */
     private final float ACCELERATION_THRESHOLD = 5.0f;
 
     public SnakeView(Context context, AttributeSet attrs) {
@@ -48,6 +66,10 @@ public class SnakeView extends GridView {
         initSnakeView(context);
     }
 
+    /**
+     * Définit les différents types de tiles utilisés dans le jeu
+     * @param context Contexte de l'application
+     */
     private void initSnakeView(Context context) {
         setFocusable(true);
         Resources r = context.getResources();
@@ -62,21 +84,38 @@ public class SnakeView extends GridView {
         loadTile(TILE_AI_SNAKE, r.getDrawable(R.drawable.ic_robot));
     }
 
+    /**
+     * Définit la TextView à utiliser pour afficher le résultat de la partie
+     * @param resultGameTextView TextView du résultat
+     */
     public void setResultGameTextView(TextView resultGameTextView) {
         this.resultGameTextView = resultGameTextView;
     }
 
+    /**
+     * Définit le texte à afficher dans la TextView du résultat et la rend visible
+     * @param text Texte à afficher
+     */
     private void setResultText(String text) {
         resultGameTextView.setText(text);
         resultGameTextView.setVisibility(VISIBLE);
     }
 
+    /**
+     * Définit les valeurs reçues par l'accéléromètre et les stocke
+     * @param linearAccelerationX Accélération sur l'axe X
+     * @param linearAccelerationY Accélération sur l'axe Y
+     * @param linearAccelerationZ Accélération sur l'axe Z
+     */
     public void setLinearAccelerationValues(float linearAccelerationX, float linearAccelerationY, float linearAccelerationZ) {
         this.linearAccelerationX = linearAccelerationX;
         this.linearAccelerationY = linearAccelerationY;
         this.linearAccelerationZ = linearAccelerationZ;
     }
 
+    /**
+     * Initialise les différents modèles, cache la TextView du résultat et lance la partie
+     */
     public void startGame() {
         snake = new PlayerSnake();
         iaSnake = new IASnake();
@@ -85,6 +124,9 @@ public class SnakeView extends GridView {
         if(resultGameTextView != null) resultGameTextView.setVisibility(INVISIBLE);
     }
 
+    /**
+     * Arrête la partie (venant de l'utilisateur)
+     */
     public void stopGame() {
         if(resultGameTextView != null) resultGameTextView.setVisibility(INVISIBLE);
         currentMode = MODE_STOP;
@@ -92,12 +134,9 @@ public class SnakeView extends GridView {
 
     private RefreshHandler mRedrawHandler = new RefreshHandler();
 
-    public void switchMovementMode(MenuItem menuMovementModeTextView) {
-        currentMovementMode = (currentMovementMode.equals(MODE_TOUCH)) ? MODE_ACCELERATION : MODE_TOUCH;
-
-        menuMovementModeTextView.setTitle((currentMovementMode.equals(MODE_TOUCH)) ? "Touch mode" : "Acceleration mode");
-    }
-
+    /**
+     * Handler pour faire avancer le jeu toutes les 400 millisecondes
+     */
     class RefreshHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -111,10 +150,24 @@ public class SnakeView extends GridView {
         }
     }
 
+    /**
+     * Changement de mode de mouvement
+     * @param menuMovementModeTextView TextView du bouton dans le menu
+     */
+    public void switchMovementMode(MenuItem menuMovementModeTextView) {
+        currentMovementMode = (currentMovementMode.equals(MODE_TOUCH)) ? MODE_ACCELERATION : MODE_TOUCH;
+
+        menuMovementModeTextView.setTitle((currentMovementMode.equals(MODE_TOUCH)) ? "Touch mode" : "Acceleration mode");
+    }
+
+    /**
+     * Affiche le serpent du joueur (tête et corps)
+     * Si le serpent ne peut plus bouger, sort de l'écran ou se mord lui-même, le jeu se finit
+     */
     private void showSnake() {
         if(currentMode == MODE_PLAY) {
             if(!snake.move() || snake.isOutOfScreen() || snake.checkCollisionWithItself()) {
-                setResultText("YOU LOSE MOTHAFUCKA !");
+                setResultText("YOU LOSE !");
                 currentMode = MODE_END;
             }
         }
@@ -129,12 +182,17 @@ public class SnakeView extends GridView {
         }
     }
 
+
+    /**
+     * Affiche le serpent de l'IA (tête et corps) et définit son objectif (la pomme)
+     * Si le serpent ne peut plus bouger, sort de l'écran ou se mord lui-même, le jeu se finit
+     */
     private void showIASnake() {
         iaSnake.lookAtApple(apple.getPosition());
 
         if(currentMode == MODE_PLAY) {
-            if(!iaSnake.move() || iaSnake.isOutOfScreen()) {
-                setResultText("YOU WIN MOTHAFUCKA !");
+            if(!iaSnake.move() || iaSnake.isOutOfScreen() || iaSnake.checkCollisionWithItself()) {
+                setResultText("YOU WIN !");
                 currentMode = MODE_END;
             }
         }
@@ -151,15 +209,28 @@ public class SnakeView extends GridView {
         iaSnake.checkCollision(apple);
     }
 
+    /**
+     * Affiche la pomme
+     */
     private void showApple() {
         Vector2<Integer> applePosition = apple.getPosition();
         setTile(TILE_APPLE, applePosition.getX(), applePosition.getY());
     }
 
+    /**
+     * Vérifie si le serpent du joueur entre en collision avec la pomme
+     */
     private void checkCollision() {
         snake.checkCollision(apple);
     }
 
+    /**
+     * Définit le futur déplacement du serpent du joueur selon l'endroit où il appuye sur l'écran
+     * On calcule la différence entre le point appuyé sur l'écran et la position du serpent (en X et en Y)
+     * On définit ensuite le déplacement vers l'axe où la différence est la plus grande
+     * @param event Event
+     * @return True
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //This prevents touchscreen events from flooding the main thread
@@ -194,6 +265,9 @@ public class SnakeView extends GridView {
     }
 
 
+    /**
+     * Met à jour le jeu (affiche les murs et modèles, lance les mouvements et vérifie les collisions)
+     */
     @Override
     protected void updateTiles() {
         for (int x = 0; x < GridView.getNbTileX(); x++) {
