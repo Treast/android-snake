@@ -18,10 +18,25 @@ import fr.vincentriva.snake2.views.SnakeView;
 
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * View du jeu
+     */
     private SnakeView snakeView;
+
+    /**
+     * TextView du résultat de la partie
+     */
     private TextView resultGameTextView;
+
+    /**
+     * Booléen définissant si le jeu est en cours ou non
+     */
     private boolean isRunning = false;
 
+    /**
+     * On récupère les ressources nécessaires
+     * @param savedInstanceState Bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
         resultGameTextView.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * Au lancement de l'activitié, on initialise le service permettant de récupérer les données de l'accéléromètre
+     * et un BroadcastReceiver pour dispatcher ses valeurs
+     */
     @Override
     protected void onStart() {
         this.snakeView.setResultGameTextView(resultGameTextView);
@@ -51,10 +70,19 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
+    /**
+     * Passe les données de l'accéléromètre à la View du jeu
+     * @param linearAccelerationX Accélération sur l'axe X
+     * @param linearAccelerationY Accélération sur l'axe Y
+     * @param linearAccelerationZ Accélération sur l'axe Z
+     */
     public void updateSensor(float linearAccelerationX, float linearAccelerationY, float linearAccelerationZ) {
         this.snakeView.setLinearAccelerationValues(linearAccelerationX, linearAccelerationY, linearAccelerationZ);
     }
 
+    /**
+     * Stoppe le service si l'application est arrêtée
+     */
     @Override
     protected void onStop() {
         super.onStop();
