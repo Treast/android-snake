@@ -289,6 +289,9 @@ public class SnakeView extends GridView {
         showIASnake();
     }
 
+    /**
+     * Définit le futur mouvement du serpent du joueur (MODE_ACCELERATION uniquement)
+     */
     public void setSnakeMovement() {
         switch(currentMovementMode) {
             case MODE_ACCELERATION:
@@ -302,7 +305,9 @@ public class SnakeView extends GridView {
         }
     }
 
-
+    /**
+     * Nettoye l'écran de jeu
+     */
     @Override
     public void clearTiles() {
         if (currentMode != MODE_STOP) {
