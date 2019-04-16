@@ -7,6 +7,7 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -141,21 +142,57 @@ public class SnakeView extends GridView {
         Vector2<Integer> iaSnakePosition = iaSnake.getPosition();
         setTile(TILE_AI_SNAKE, iaSnakePosition.getX(), iaSnakePosition.getY());
 
+        ArrayList<Vector2<Integer>> coordinates = iaSnake.getTrail();
+        for (int i = 0; i < coordinates.size() - 1; i += 1) {
+            Vector2<Integer> coords = coordinates.get(i);
+            setTile(TILE_SNAKE_TAIL, coords.getX(), coords.getY());
+        }
+
         iaSnake.checkCollision(apple);
     }
 
     private void showApple() {
-        if (apple != null) {
-            Vector2<Integer> applePosition = apple.getPosition();
-            setTile(TILE_APPLE, applePosition.getX(), applePosition.getY());
-        }
+        Vector2<Integer> applePosition = apple.getPosition();
+        setTile(TILE_APPLE, applePosition.getX(), applePosition.getY());
     }
 
     private void checkCollision() {
-        if (apple != null && snake != null) {
-            snake.checkCollision(apple);
-        }
+        snake.checkCollision(apple);
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        //This prevents touchscreen events from flooding the main thread
+        synchronized (event) {
+            try {
+                //Waits 16ms.
+                event.wait(16);
+
+                if(currentMovementMode.equals(MODE_TOUCH) && event.getAction() == MotionEvent.ACTION_UP) {
+                    int xInitRaw = (int) Math.floor(event.getRawX());
+                    int yInitRaw = (int) Math.floor(event.getRawY());
+
+                    double xVirtual = GridView.getTileX(xInitRaw);
+                    double yVirtual = GridView.getTileY(yInitRaw);
+
+                    double diffX = Math.abs(xVirtual - this.snake.getPosition().getX());
+                    double diffY = Math.abs(yVirtual - this.snake.getPosition().getY());
+
+                    if(diffX > diffY) {
+                        this.snake.setVector((int)Math.signum(xVirtual - snake.getPosition().getX()), 0);
+                    } else {
+                        this.snake.setVector(0, (int)Math.signum(yVirtual - snake.getPosition().getY()));
+                    }
+                }
+            }
+            catch (InterruptedException e)
+            {
+                return true;
+            }
+        }
+        return true;
+    }
+
 
     @Override
     protected void updateTiles() {
@@ -169,21 +206,25 @@ public class SnakeView extends GridView {
             setTile(TILE_WALL, mNbTileX - 1, y);
         }
 
+        checkCollision();
+
         setSnakeMovement();
 
         showApple();
         showSnake();
         showIASnake();
-        checkCollision();
     }
 
     public void setSnakeMovement() {
-        if (snake != null) {
-            if (Math.abs(linearAccelerationY) > Math.abs(linearAccelerationX) && Math.abs(linearAccelerationY) > ACCELERATION_THRESHOLD) {
-                snake.setVector(0, -1 * (int)Math.signum(linearAccelerationX));
-            } else if(Math.abs(linearAccelerationX) > ACCELERATION_THRESHOLD) {
-                snake.setVector((int)Math.signum(linearAccelerationX), 0);
-            }
+        switch(currentMovementMode) {
+            case MODE_ACCELERATION:
+                if (Math.abs(linearAccelerationY) > Math.abs(linearAccelerationX) && Math.abs(linearAccelerationY) > ACCELERATION_THRESHOLD) {
+                    snake.setVector(0, (int)Math.signum(linearAccelerationY));
+                } else if(Math.abs(linearAccelerationX) > ACCELERATION_THRESHOLD) {
+                    snake.setVector((int)Math.signum(linearAccelerationX), 0);
+                }
+                break;
+            default: break;
         }
     }
 
@@ -196,7 +237,6 @@ public class SnakeView extends GridView {
                     setTile(TILE_EMPTY, x, y);
                 }
             }
-            // Log.d("SnakeState", "Clear");
 
             updateTiles();
         }

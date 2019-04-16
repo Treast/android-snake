@@ -12,6 +12,7 @@ public abstract class ISnake {
     protected Vector2<Integer> position;
     protected Vector2<Integer> speed;
     protected ArrayList<Vector2<Integer>> stack = new ArrayList<>();
+    protected Vector2<Integer> tempTail;
 
     protected ISnake() {
         board = new Vector2<>(GridView.getNbTileX(), GridView.getNbTileY());
@@ -30,7 +31,7 @@ public abstract class ISnake {
     }
 
     private void addTail(int x, int y) {
-        stack.add(new Vector2<>(x, y));
+        tempTail = new Vector2<>(x, y);
     }
 
     public abstract boolean move();
@@ -46,9 +47,10 @@ public abstract class ISnake {
         return position.getX() <= 0 || position.getX() >= board.getX() - 1 || position.getY() <= 0 || position.getY() >= board.getY() - 1;
     }
 
-    public Boolean checkCollisionWithItself() {
-        Boolean isCollided = false;
-        for(Vector2 tail : stack) {
+    public boolean checkCollisionWithItself() {
+        boolean isCollided = false;
+        for(int i = 0; i < stack.size() - 1; i += 1) {
+            Vector2 tail = stack.get(i);
             if(tail.getX().equals(position.getX()) && tail.getY().equals(position.getY())) isCollided = true;
         }
         return isCollided;

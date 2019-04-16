@@ -26,6 +26,14 @@ public class IASnake extends ISnake {
 
         if (position.getX() >= 1 && position.getX() < board.getX() - 2 && position.getY() >= 1 && position.getY() < board.getY() - 2) {
             position = newPosition;
+            stack.remove(0);
+
+            if(tempTail != null) {
+                stack.add(tempTail);
+                tempTail = null;
+            }
+
+            stack.add(position.clone());
             return true;
         }
         return false;
